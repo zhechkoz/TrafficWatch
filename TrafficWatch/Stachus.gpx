@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" creator="mapstogpx.com" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd">
+    <metadata>
+        <link href="http://www.mapstogpx.com">
+            <text>Sverrir Sigmundarson</text>
+        </link>
+        <!--desc>Map data ©2016 COWI, GeoBasis-DE/BKG (©2009), Google</desc-->
+        <!--copyright author="Google Inc">
+         <year>2016</year>
+         <license>https://developers.google.com/maps/terms</license>
+         </copyright-->
+        <!--url>https://www.google.co.uk/maps/dir/48.1389976,11.5659911/Rindermarkt 1, 80331 München/@48.1377511,11.5661847,16z/data=!3m1!4b1!4m9!4m8!1m0!1m5!1m1!1s0x479e758ac56cfd59:0xc7fc1255d127793a!2m2!1d11.5758187!2d48.1364774!3e2?hl=en&hl=en</url-->
+        <time>2016-07-25T21:31:20Z</time>
+    </metadata>
+    <wpt lat="48.1389738" lon="11.5659919">
+    
+        <name>WP001</name>
+        <time>2016-07-25T21:31:20Z</time>
+    </wpt>
+</gpx>
+
+<!-- In front of JWW 21 -->
+<!-- <wpt lat="48.199517" lon="11.625507"> -->
