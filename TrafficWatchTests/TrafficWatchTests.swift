@@ -92,9 +92,9 @@ class TrafficWatchTests: XCTestCase, IncidentsParserDelegate {
     // MARK: - delegate methods on the background thread
     func incidentsParseOperation(_ parseOperation: IncidentsParseOperation,
                                  loadedIncidents: [Incident], error: Error?) {
-                DispatchQueue.main.async(execute: {
-                self.handleLoadedIncidents(loadedIncidents)
-            })
+        DispatchQueue.main.async { [weak self] in
+            self?.handleLoadedIncidents(loadedIncidents)
+        }
     }
     
     // MARK: - synchronization method on the main thread

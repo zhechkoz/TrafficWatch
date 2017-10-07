@@ -13,7 +13,7 @@ import MapKit
 
 open class Incident: NSObject, MKAnnotation {
     
-	open var title: String?
+    open var title: String?
     open var time: Date
     open var summary: String
     open var weblink: String

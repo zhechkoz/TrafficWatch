@@ -15,10 +15,10 @@ enum SlideOutState {
 }
 
 class ContainerViewController: UIViewController, CenterViewControllerDelegate, UIGestureRecognizerDelegate {
-    fileprivate var centerNavigationController: UINavigationController!
-    fileprivate var centerViewController: TrafficViewController!
+    private var centerNavigationController: UINavigationController!
+    private var centerViewController: TrafficViewController!
     
-    fileprivate var currentState: SlideOutState = .collapsed {
+    private var currentState: SlideOutState = .collapsed {
         didSet {
             let shouldShowShadow = currentState != .collapsed
             showShadowForCenterViewController(shouldShowShadow)
@@ -26,9 +26,9 @@ class ContainerViewController: UIViewController, CenterViewControllerDelegate, U
         }
     }
     
-    fileprivate var leftViewController: SortOptionsTableViewController?
+    private var leftViewController: SortOptionsTableViewController?
     
-    fileprivate let centerPanelExpandedOffset: CGFloat = 150
+    private let centerPanelExpandedOffset: CGFloat = 150
     
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -46,6 +46,9 @@ class ContainerViewController: UIViewController, CenterViewControllerDelegate, U
         centerViewController.delegate = self
         
         centerNavigationController = UINavigationController(rootViewController: centerViewController)
+        if #available(iOS 11.0, *) {
+            centerNavigationController.navigationBar.prefersLargeTitles = true
+        }
         view.addSubview(centerNavigationController.view)
         addChildViewController(centerNavigationController)
         

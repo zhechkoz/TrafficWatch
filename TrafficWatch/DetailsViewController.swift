@@ -12,19 +12,19 @@ import MapKit
 import SafariServices
 
 final class DetailsViewController: UIViewController {
-    @IBOutlet weak fileprivate var titleLabel: UILabel!
-    @IBOutlet weak fileprivate var summaryTextView: UITextView!
-    @IBOutlet weak fileprivate var mapView: MKMapView!
-    @IBOutlet weak fileprivate var mapNotFoundImage: UIImageView!
-    @IBOutlet weak fileprivate var changeMapTypeSegment: UISegmentedControl!
-    @IBOutlet weak fileprivate var changeMapTypeButton: UIButton!
-    @IBOutlet weak var showCurrentLocationButton: UIButton!
+    @IBOutlet weak private var titleLabel: UILabel!
+    @IBOutlet weak private var summaryTextView: UITextView!
+    @IBOutlet weak private var mapView: MKMapView!
+    @IBOutlet weak private var mapNotFoundImage: UIImageView!
+    @IBOutlet weak private var changeMapTypeSegment: UISegmentedControl!
+    @IBOutlet weak private var changeMapTypeButton: UIButton!
+    @IBOutlet weak private var showCurrentLocationButton: UIButton!
     
-    fileprivate final let defaultCornerRadius: CGFloat = 5
+    private final let defaultCornerRadius: CGFloat = 5
     
     var incident: Incident?
     
-    fileprivate var mapTypeSegmentControlShouldHide: Bool = true {
+    private var mapTypeSegmentControlShouldHide: Bool = true {
         didSet {
             let originalFrame = changeMapTypeSegment.frame
 			let smallFrame = CGRect(x: originalFrame.origin.x + originalFrame.width,
@@ -63,11 +63,15 @@ final class DetailsViewController: UIViewController {
 		
         titleLabel.text = incident?.title
 		
-        // Рesolves bug with not setting right the font
+        // Resolves bug with not setting right the font
         summaryTextView.isSelectable = true
         summaryTextView.text = incident?.summary
         summaryTextView.isSelectable = false
 		
+        // We don't need the big title bar because of readability concerns
+        if #available(iOS 11.0, *) {
+            navigationItem.largeTitleDisplayMode = .never
+        }
         
         // Determine if incident location exists
         if let location = incident?.location {
@@ -80,7 +84,7 @@ final class DetailsViewController: UIViewController {
                 showCurrentLocationButton.isEnabled = false
             }
         
-            // Image for map not avaliable is removed before the map location is set
+            // Image for map not available is removed before the map location is set
             mapNotFoundImage.removeFromSuperview()
         
             // Hide the segment because it is only accessible after a button press
@@ -114,7 +118,7 @@ final class DetailsViewController: UIViewController {
 	override func viewWillLayoutSubviews() {
 		super.viewWillLayoutSubviews()
         
-        // Scroll summary text to top because the defualt is scrolled to the bottom
+        // Scroll summary text to top because the default is scrolled to the bottom
         summaryTextView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
         
         mapView.layer.cornerRadius = UIDevice.current.orientation.isLandscape ? defaultCornerRadius : 0

@@ -15,18 +15,22 @@ final class IncidentsMapViewController: UIViewController {
     
     var incidents: [Incident]? {
         didSet {
-            validIncidents = incidents?.filter { $0.location != nil }
+            incidents = incidents?.filter { $0.location != nil }
         }
     }
-    fileprivate var validIncidents: [Incident]?
-    fileprivate var isInitialStart = true
+    private var isInitialStart = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         mapView.delegate = self
         
-        mapView.addAnnotations(validIncidents ?? [])
+        // We don't need the big title bar because of readability concerns
+        if #available(iOS 11.0, *) {
+            navigationItem.largeTitleDisplayMode = .never
+        }
+        
+        mapView.addAnnotations(incidents ?? [])
     }
     
     override func viewWillAppear(_ animated: Bool) {

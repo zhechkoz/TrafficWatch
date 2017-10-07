@@ -17,37 +17,44 @@ protocol CenterViewControllerDelegate {
 }
 
 final class TrafficViewController: UIViewController, IncidentsParserDelegate, SidePanelViewControllerDelegate {
-    @IBOutlet fileprivate weak var tableView: UITableView!
+    @IBOutlet private weak var tableView: UITableView!
     
-    fileprivate var incidents: [Incident]?
-    fileprivate var operationQueue: OperationQueue?
-    fileprivate lazy var imageProcessingQueue = OperationQueue()
+    private var incidents: [Incident]?
+    private lazy var incidentsDownloadingQueue = OperationQueue()
+    private lazy var imageProcessingQueue = OperationQueue()
     
-    fileprivate var refresh = UIRefreshControl()
-    fileprivate var locationManager = CLLocationManager()
+    private lazy var refreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshIncidents(sender:)), for: .valueChanged)
+        
+        return refreshControl
+    }()
     
-    fileprivate let incidentsURLString = "http://www.freiefahrt.info/lmst.de_DE.xml"
-    
-    fileprivate var sortingMethod: SortingMethod = .byLocation {
+    private let incidentsURLString = "http://www.freiefahrt.info/lmst.de_DE.xml"
+    private let locationManager = CLLocationManager()
+    weak var delegate: CenterViewControllerDelegate?
+
+    private var sortingMethod: SortingMethod = .byLocation {
         didSet {
             sortIncidents()
         }
     }
     
-    weak var delegate: CenterViewControllerDelegate?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        refresh.addTarget(self, action: #selector(refreshView), for: .valueChanged)
-        tableView.addSubview(refresh)
-        
-        locationManager.delegate = self
+
+        // Make the title appear bigger
+        if #available(iOS 11.0, *) {
+            navigationItem.largeTitleDisplayMode = .always
+        }
         
         // Register for force touch
         if traitCollection.forceTouchCapability == .available {
             registerForPreviewing(with: self, sourceView: tableView)
         }
+        
+        tableView.refreshControl = refreshControl
+        locationManager.delegate = self
         
         loadIncidentsData()
     }
@@ -75,59 +82,52 @@ final class TrafficViewController: UIViewController, IncidentsParserDelegate, Si
         }
     }
     
-    @objc func refreshView() {
-        if operationQueue != nil && operationQueue!.operationCount > 0 {
-            operationQueue?.cancelAllOperations()
+    @objc private func refreshIncidents(sender: UIRefreshControl) {
+        if incidentsDownloadingQueue.operationCount > 0 {
+            incidentsDownloadingQueue.cancelAllOperations()
         }
         
         // Update incidents
         loadIncidentsData()
     }
     
-    fileprivate func loadIncidentsData() {
-        if operationQueue != nil && operationQueue!.operationCount > 0 {
-            // Downloading
-            return
+    private func loadIncidentsData() {
+        if incidentsDownloadingQueue.operationCount > 0 {
+            return // Downloading
         }
         
         let feedURL = URL(string: incidentsURLString)
-        
-        operationQueue = OperationQueue()
-
         let parseOperation = IncidentsParseOperation(feedURL: feedURL!, delegate: self)
 
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
-        operationQueue?.addOperation(parseOperation)
+        incidentsDownloadingQueue.addOperation(parseOperation)
     }
-    
-    fileprivate func handleLoadedIncidents(_ loadedIncidents: [Incident]) {
-        
-    }
-    
+
     func incidentsParseOperation(_ parser: IncidentsParseOperation, loadedIncidents: [Incident], error: Error?) {
         // Although DispatchQueue does not retain self and there is no retain cycle here we don't
         // want to update incidents if the view is no longer there
         DispatchQueue.main.async { [weak self] in
             UIApplication.shared.isNetworkActivityIndicatorVisible = false
-            self?.refresh.endRefreshing() // Stop refreshing
+            self?.tableView.refreshControl?.endRefreshing() // Stop refreshing
             
             if let error = error {
                 UIAlertController.showInformationAlertController(title: "Error",
                                                                  message: error.localizedDescription,
                                                                  viewController: self)
+                self?.incidents = []
             } else {
                 self?.incidents = loadedIncidents
-                self?.sortIncidents()
             }
+            self?.sortIncidents()
         }
         
-        operationQueue = nil
+        incidentsDownloadingQueue.cancelAllOperations()
     }
     
     fileprivate func sortIncidents() {
         switch sortingMethod {
         case .byDate:
-            self.incidents?.sort(by: sortIncidentsByDate)
+            incidents?.sort(by: sortIncidentsByDate)
             tableView.reloadData()
             scrollToTopOfTableView(tableView, animated: true)
             loadRoadSigns() // Load images for roadsigns
@@ -146,8 +146,8 @@ final class TrafficViewController: UIViewController, IncidentsParserDelegate, Si
     }
     
     fileprivate func sortIncidentsByDate(firstIncident: Incident, secondIncident: Incident) -> Bool {
-        // If time is ecual sort incidents by their summary in order to acheave constant
-        // order of the incidents in different refreshs
+        // If time is equal sort incidents by their summary in order to achieve constant
+        // order of the incidents in different refreshes
         if firstIncident.time == secondIncident.time {
             return firstIncident.summary > secondIncident.summary
         }
@@ -156,8 +156,9 @@ final class TrafficViewController: UIViewController, IncidentsParserDelegate, Si
     }
     
     
-    fileprivate func sortIncidentsByLocation(_ firstIncident: Incident, _ secondIncident: Incident, _ location: CLLocation) -> Bool {
-        // If locations avaliable compare them
+    fileprivate func sortIncidentsByLocation(_ firstIncident: Incident, _ secondIncident: Incident,
+                                             _ location: CLLocation) -> Bool {
+        // If locations available compare them
         guard let firstLocation = firstIncident.location,
             let secondLocation = secondIncident.location else {
                 // Some of the incidents don't provide any location. This sorts them at the end of the array
@@ -230,7 +231,29 @@ extension TrafficViewController: SegueHandlerType {
 
 extension TrafficViewController: UITableViewDataSource, UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        let sectionsCount = incidents?.count ?? 0
+        
+        if sectionsCount > 0 {
+            tableView.separatorStyle = .singleLine;
+            tableView.backgroundView = nil
+            return 1
+        }
+        
+        // Display a message when the table is empty
+        let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: view.bounds.size.width,
+                                                 height: view.bounds.size.height))
+        
+        messageLabel.text = "No data is currently available. Please pull down to refresh."
+        messageLabel.textColor = .black
+        messageLabel.numberOfLines = 0
+        messageLabel.textAlignment = .center
+        messageLabel.font = UIFont(name: "Palatino-Italic", size: 20)
+        messageLabel.sizeToFit()
+        
+        tableView.backgroundView = messageLabel
+        tableView.separatorStyle = .none;
+        
+        return 0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

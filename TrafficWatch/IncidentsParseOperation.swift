@@ -104,19 +104,16 @@ final public class IncidentsParseOperation: Operation, XMLParserDelegate {
                 currentIncidentObject = nil
                 
             case "title":
-                if let potentialcontentOfCurrentIncidentString = contentOfCurrentIncidentString {
-                    currentIncidentObject!.title = potentialcontentOfCurrentIncidentString
-                }
+                currentIncidentObject!.title = contentOfCurrentIncidentString
                 
             case "description":
-                if let potentialcontentOfCurrentIncidentString = contentOfCurrentIncidentString {
-                    currentIncidentObject!.summary = potentialcontentOfCurrentIncidentString
-                }
+                currentIncidentObject!.summary = contentOfCurrentIncidentString ?? ""
+                
+            case "link":
+                currentIncidentObject!.weblink = contentOfCurrentIncidentString ?? ""
                 
             case "updated":
-                if let potentialcontentOfCurrentIncidentString = contentOfCurrentIncidentString {
-                    currentIncidentObject!.time = dateFromString(potentialcontentOfCurrentIncidentString)
-                }
+                currentIncidentObject!.time = dateFromString(contentOfCurrentIncidentString ?? "")
                 
             default:
                 return

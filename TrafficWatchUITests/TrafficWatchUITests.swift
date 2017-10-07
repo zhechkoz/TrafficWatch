@@ -29,6 +29,7 @@ class TrafficWatchUITests: XCTestCase {
     }
     
     func testStaticTexts() {
-        XCTAssert(app.staticTexts["Traffic Info"].exists)
+        //XCTAssert(app.staticTexts[""].exists)
+        XCTAssert(app.otherElements["Traffic Info"].exists)
     }
 }
